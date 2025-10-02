@@ -1,3 +1,4 @@
+import { ListItem } from "@tiptap/extension-list";
 import {
   EditorContent,
   EditorContext,
@@ -7,15 +8,38 @@ import {
   useEditorState,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 export default function TipTapEditor() {
   const editor = useEditor({
-    extensions: [StarterKit, CustomTab], // define your extension array
+    extensions: [
+      StarterKit.configure({
+        listItem: false, // disable default ListItem
+      }),
+      CustomTab,
+      CustomListItem,
+    ], // define your extension array
     content: "<p>Hello World!</p>", // initial content
   });
 
   const providerValue = useMemo(() => ({ editor }), [editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Tab") {
+        event.preventDefault();
+      }
+    };
+
+    const el = editor.view.dom;
+    el.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      el.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [editor]);
 
   return (
     <EditorContext.Provider value={providerValue}>
@@ -35,13 +59,15 @@ function TipTapCustomToolbar() {
       }
       return {
         isBold: ctx.editor.isActive("bold") ?? false,
-        canBold: ctx.editor.can().chain().toggleBold().run() ?? false,
+        canBold: ctx.editor.can().chain().focus().toggleBold().run() ?? false,
         isItalic: ctx.editor.isActive("italic") ?? false,
-        canItalic: ctx.editor.can().chain().toggleItalic().run() ?? false,
+        canItalic:
+          ctx.editor.can().chain().focus().toggleItalic().run() ?? false,
         isStrike: ctx.editor.isActive("strike") ?? false,
-        canStrike: ctx.editor.can().chain().toggleStrike().run() ?? false,
+        canStrike:
+          ctx.editor.can().chain().focus().toggleStrike().run() ?? false,
         isCode: ctx.editor.isActive("code") ?? false,
-        canCode: ctx.editor.can().chain().toggleCode().run() ?? false,
+        canCode: ctx.editor.can().chain().focus().toggleCode().run() ?? false,
         canClearMarks: ctx.editor.can().chain().unsetAllMarks().run() ?? false,
         isParagraph: ctx.editor.isActive("paragraph") ?? false,
         isHeading1: ctx.editor.isActive("heading", { level: 1 }) ?? false,
@@ -54,8 +80,8 @@ function TipTapCustomToolbar() {
         isOrderedList: ctx.editor.isActive("orderedList") ?? false,
         isCodeBlock: ctx.editor.isActive("codeBlock") ?? false,
         isBlockquote: ctx.editor.isActive("blockquote") ?? false,
-        canUndo: ctx.editor.can().chain().undo().run() ?? false,
-        canRedo: ctx.editor.can().chain().redo().run() ?? false,
+        canUndo: ctx.editor.can().chain().focus().undo().run() ?? false,
+        canRedo: ctx.editor.can().chain().focus().redo().run() ?? false,
       };
     },
   });
@@ -82,7 +108,7 @@ function TipTapCustomToolbar() {
 
 export const CustomTab = Extension.create({
   name: "customTab",
-  priority: 100,
+
   addKeyboardShortcuts() {
     return {
       Tab: ({ editor }) => {
@@ -120,6 +146,22 @@ export const CustomTab = Extension.create({
 
         // Default behavior for Shift-Tab outside lists
         return false;
+      },
+    };
+  },
+});
+
+const CustomListItem = ListItem.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      style: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("style"),
+        renderHTML: (attributes) => {
+          if (!attributes.style) return {};
+          return { style: attributes.style };
+        },
       },
     };
   },
