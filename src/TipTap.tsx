@@ -8,6 +8,8 @@ import {
   useEditorState,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { Button } from "antd";
+import { Bold, List, ListOrdered } from "lucide-react";
 import { useEffect, useMemo } from "react";
 
 export default function TipTapEditor() {
@@ -82,6 +84,10 @@ function TipTapCustomToolbar() {
         canRedo: editor.can().chain().focus().redo().run() ?? false,
         actions: {
           toggleBold: () => editor.chain().focus().toggleBold().run(),
+          toggleBulletList: () =>
+            editor.chain().focus().toggleBulletList().run(),
+          toggleOrderedList: () =>
+            editor.chain().focus().toggleOrderedList().run(),
         },
       };
     },
@@ -92,20 +98,31 @@ function TipTapCustomToolbar() {
   }
 
   return (
-    <div className="flex gap-4 [&_button]:px-2 [&_button]:bg-gray-200 [&_button]:rounded pb-4">
-      <button
-        onClick={() => editor.chain().focus().toggleBold().run()}
+    <div className="flex gap-px [&_button]:px-2 [&_button]:bg-gray-200 [&_button]:rounded pb-4">
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleBold()}
         disabled={!editorState.canBold}
-        className={editorState.isBold ? "font-bold" : ""}
-      >
-        Bold
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={editorState.isBulletList ? "font-bold" : ""}
-      >
-        bullet-list
-      </button>
+        className={editorState.isBold ? "!bg-red-200" : ""}
+        icon={<Bold size={14} />}
+      />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleBulletList()}
+        disabled={!editorState.canBold}
+        className={editorState.isBulletList ? "!bg-red-200" : ""}
+        icon={<List size={14} />}
+      />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleOrderedList()}
+        disabled={!editorState.canBold}
+        className={editorState.isOrderedList ? "!bg-red-200" : ""}
+        icon={<ListOrdered size={14} />}
+      />
     </div>
   );
 }
@@ -169,4 +186,8 @@ const CustomListItem = ListItem.extend({
       },
     };
   },
+});
+
+export const CustomSelection = Extension.create({
+  name: "customSelection",
 });
