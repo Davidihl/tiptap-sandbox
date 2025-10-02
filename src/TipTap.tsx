@@ -1,3 +1,4 @@
+import { StrikethroughOutlined } from "@ant-design/icons";
 import { ListItem } from "@tiptap/extension-list";
 import {
   Editor,
@@ -10,8 +11,21 @@ import {
   type EditorStateSnapshot,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Button } from "antd";
-import { Bold, Italic, List, ListOrdered, Underline } from "lucide-react";
+import { Button, Divider } from "antd";
+import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  Italic,
+  List,
+  ListOrdered,
+  Strikethrough,
+  Subscript,
+  Superscript,
+  Underline,
+} from "lucide-react";
 import { useEffect, useMemo } from "react";
 
 export default function TipTapEditor() {
@@ -65,8 +79,10 @@ function TipTapCustomToolbar() {
     return null;
   }
 
+  const dividerStyle = "border-l border-black/10 self-stretch mx-1 my-1";
+
   return (
-    <div className="flex gap-px [&_button]:px-2 [&_button]:bg-gray-200 [&_button]:rounded pb-4">
+    <div className="flex gap-1 pb-4 items-center flex-wrap">
       <Button
         size="small"
         type="text"
@@ -83,6 +99,7 @@ function TipTapCustomToolbar() {
         className={editorState.isItalic ? "!bg-red-200" : ""}
         icon={<Italic size={14} />}
       />
+
       <Button
         size="small"
         type="text"
@@ -91,6 +108,60 @@ function TipTapCustomToolbar() {
         className={editorState.isUnderline ? "!bg-red-200" : ""}
         icon={<Underline size={14} />}
       />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleStrike()}
+        disabled={!editorState.canStrike}
+        className={editorState.isStrike ? "!bg-red-200" : ""}
+        icon={<Strikethrough size={14} />}
+      />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleStrike()}
+        disabled={!editorState.canStrike}
+        className={editorState.isStrike ? "!bg-red-200" : ""}
+        icon={<Subscript size={14} />}
+      />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleStrike()}
+        disabled={!editorState.canStrike}
+        className={editorState.isStrike ? "!bg-red-200" : ""}
+        icon={<Superscript size={14} />}
+      />
+      <div className={dividerStyle} />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleOrderedList()}
+        className={editorState.isOrderedList ? "!bg-red-200" : ""}
+        icon={<AlignLeft size={14} />}
+      />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleOrderedList()}
+        className={editorState.isOrderedList ? "!bg-red-200" : ""}
+        icon={<AlignCenter size={14} />}
+      />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleOrderedList()}
+        className={editorState.isOrderedList ? "!bg-red-200" : ""}
+        icon={<AlignRight size={14} />}
+      />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleOrderedList()}
+        className={editorState.isOrderedList ? "!bg-red-200" : ""}
+        icon={<AlignJustify size={14} />}
+      />
+      <div className={dividerStyle} />
       <Button
         size="small"
         type="text"
@@ -105,6 +176,8 @@ function TipTapCustomToolbar() {
         className={editorState.isOrderedList ? "!bg-red-200" : ""}
         icon={<ListOrdered size={14} />}
       />
+
+      <div className={dividerStyle} />
     </div>
   );
 }
