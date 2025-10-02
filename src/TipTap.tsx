@@ -99,7 +99,7 @@ function TipTapCustomToolbar() {
       >
         Bold
       </button>
-      <button onClick={() => editor.commands.toggleBulletList()}>
+      <button onClick={() => editor.chain().focus().toggleBulletList().run()}>
         bullet-list
       </button>
     </div>
