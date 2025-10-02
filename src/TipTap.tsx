@@ -7,10 +7,11 @@ import {
   useCurrentEditor,
   useEditor,
   useEditorState,
+  type EditorStateSnapshot,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Button } from "antd";
-import { Bold, List, ListOrdered } from "lucide-react";
+import { Bold, Italic, List, ListOrdered, Underline } from "lucide-react";
 import { useEffect, useMemo } from "react";
 
 export default function TipTapEditor() {
@@ -55,60 +56,9 @@ export default function TipTapEditor() {
 function TipTapCustomToolbar() {
   const { editor } = useCurrentEditor();
 
-  function getCurrentListType(editor: Editor) {
-    const { state } = editor;
-    const { $from } = state.selection;
-
-    // Walk up the node tree from deepest to root
-    for (let depth = $from.depth; depth > 0; depth--) {
-      const node = $from.node(depth);
-      if (node.type.name === "bulletList") return "bulletList";
-      if (node.type.name === "orderedList") return "orderedList";
-    }
-
-    return null;
-  }
-
   const editorState = useEditorState({
     editor,
-    selector: (state) => {
-      const editor = state.editor;
-      if (!editor) return null;
-
-      const currentList = getCurrentListType(editor);
-
-      return {
-        isBold: editor.isActive("bold") ?? false,
-        canBold: editor.can().chain().focus().toggleBold().run() ?? false,
-        isItalic: editor.isActive("italic") ?? false,
-        canItalic: editor.can().chain().focus().toggleItalic().run() ?? false,
-        isStrike: editor.isActive("strike") ?? false,
-        canStrike: editor.can().chain().focus().toggleStrike().run() ?? false,
-        isCode: editor.isActive("code") ?? false,
-        canCode: editor.can().chain().focus().toggleCode().run() ?? false,
-        canClearMarks: editor.can().chain().unsetAllMarks().run() ?? false,
-        isParagraph: editor.isActive("paragraph") ?? false,
-        isHeading1: editor.isActive("heading", { level: 1 }) ?? false,
-        isHeading2: editor.isActive("heading", { level: 2 }) ?? false,
-        isHeading3: editor.isActive("heading", { level: 3 }) ?? false,
-        isHeading4: editor.isActive("heading", { level: 4 }) ?? false,
-        isHeading5: editor.isActive("heading", { level: 5 }) ?? false,
-        isHeading6: editor.isActive("heading", { level: 6 }) ?? false,
-        isBulletList: currentList === "bulletList",
-        isOrderedList: currentList === "orderedList",
-        isCodeBlock: editor.isActive("codeBlock") ?? false,
-        isBlockquote: editor.isActive("blockquote") ?? false,
-        canUndo: editor.can().chain().focus().undo().run() ?? false,
-        canRedo: editor.can().chain().focus().redo().run() ?? false,
-        actions: {
-          toggleBold: () => editor.chain().focus().toggleBold().run(),
-          toggleBulletList: () =>
-            editor.chain().focus().toggleBulletList().run(),
-          toggleOrderedList: () =>
-            editor.chain().focus().toggleOrderedList().run(),
-        },
-      };
-    },
+    selector: getToolbarSelectionConfig,
   });
 
   if (!editor || !editorState) {
@@ -124,6 +74,22 @@ function TipTapCustomToolbar() {
         disabled={!editorState.canBold}
         className={editorState.isBold ? "!bg-red-200" : ""}
         icon={<Bold size={14} />}
+      />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleItalic()}
+        disabled={!editorState.canItalic}
+        className={editorState.isItalic ? "!bg-red-200" : ""}
+        icon={<Italic size={14} />}
+      />
+      <Button
+        size="small"
+        type="text"
+        onClick={() => editorState.actions.toggleUnderline()}
+        disabled={!editorState.canUnderline}
+        className={editorState.isUnderline ? "!bg-red-200" : ""}
+        icon={<Underline size={14} />}
       />
       <Button
         size="small"
@@ -207,3 +173,60 @@ const CustomListItem = ListItem.extend({
 export const CustomSelection = Extension.create({
   name: "customSelection",
 });
+
+function getCurrentListType(editor: Editor) {
+  const { state } = editor;
+  const { $from } = state.selection;
+
+  for (let depth = $from.depth; depth > 0; depth--) {
+    const node = $from.node(depth);
+    if (node.type.name === "bulletList") return "bulletList";
+    if (node.type.name === "orderedList") return "orderedList";
+  }
+
+  return null;
+}
+
+function getToolbarSelectionConfig(
+  snapshot: EditorStateSnapshot<Editor | null>
+) {
+  const editor = snapshot.editor;
+  if (!editor) return null;
+
+  const currentList = getCurrentListType(editor);
+
+  return {
+    isBold: editor.isActive("bold"),
+    canBold: editor.can().chain().focus().toggleBold().run(),
+    isUnderline: editor.isActive("underline"),
+    canUnderline: editor.can().chain().focus().toggleUnderline().run(),
+    isItalic: editor.isActive("italic"),
+    canItalic: editor.can().chain().focus().toggleItalic().run(),
+    isStrike: editor.isActive("strike"),
+    canStrike: editor.can().chain().focus().toggleStrike().run(),
+    isCode: editor.isActive("code"),
+    canCode: editor.can().chain().focus().toggleCode().run(),
+    canClearMarks: editor.can().chain().unsetAllMarks().run(),
+    isParagraph: editor.isActive("paragraph"),
+    isHeading1: editor.isActive("heading", { level: 1 }),
+    isHeading2: editor.isActive("heading", { level: 2 }),
+    isHeading3: editor.isActive("heading", { level: 3 }),
+    isHeading4: editor.isActive("heading", { level: 4 }),
+    isHeading5: editor.isActive("heading", { level: 5 }),
+    isHeading6: editor.isActive("heading", { level: 6 }),
+    isBulletList: currentList === "bulletList",
+    isOrderedList: currentList === "orderedList",
+    isCodeBlock: editor.isActive("codeBlock"),
+    isBlockquote: editor.isActive("blockquote"),
+    canUndo: editor.can().chain().focus().undo().run(),
+    canRedo: editor.can().chain().focus().redo().run(),
+    actions: {
+      toggleBold: () => editor.chain().focus().toggleBold().run(),
+      toggleBulletList: () => editor.chain().focus().toggleBulletList().run(),
+      toggleOrderedList: () => editor.chain().focus().toggleOrderedList().run(),
+      toggleItalic: () => editor.chain().focus().toggleItalic().run(),
+      toggleUnderline: () => editor.chain().focus().toggleUnderline().run(),
+      toggleStrike: () => editor.chain().focus().toggleStrike().run(),
+    },
+  };
+}
