@@ -1,5 +1,6 @@
 import { ListItem } from "@tiptap/extension-list";
 import {
+  Editor,
   EditorContent,
   EditorContext,
   Extension,
@@ -53,11 +54,28 @@ export default function TipTapEditor() {
 
 function TipTapCustomToolbar() {
   const { editor } = useCurrentEditor();
+
+  function getCurrentListType(editor: Editor) {
+    const { state } = editor;
+    const { $from } = state.selection;
+
+    // Walk up the node tree from deepest to root
+    for (let depth = $from.depth; depth > 0; depth--) {
+      const node = $from.node(depth);
+      if (node.type.name === "bulletList") return "bulletList";
+      if (node.type.name === "orderedList") return "orderedList";
+    }
+
+    return null;
+  }
+
   const editorState = useEditorState({
     editor,
     selector: (state) => {
       const editor = state.editor;
       if (!editor) return null;
+
+      const currentList = getCurrentListType(editor);
 
       return {
         isBold: editor.isActive("bold") ?? false,
@@ -76,8 +94,8 @@ function TipTapCustomToolbar() {
         isHeading4: editor.isActive("heading", { level: 4 }) ?? false,
         isHeading5: editor.isActive("heading", { level: 5 }) ?? false,
         isHeading6: editor.isActive("heading", { level: 6 }) ?? false,
-        isBulletList: editor.isActive("bulletList") ?? false,
-        isOrderedList: editor.isActive("orderedList") ?? false,
+        isBulletList: currentList === "bulletList",
+        isOrderedList: currentList === "orderedList",
         isCodeBlock: editor.isActive("codeBlock") ?? false,
         isBlockquote: editor.isActive("blockquote") ?? false,
         canUndo: editor.can().chain().focus().undo().run() ?? false,
@@ -111,7 +129,6 @@ function TipTapCustomToolbar() {
         size="small"
         type="text"
         onClick={() => editorState.actions.toggleBulletList()}
-        disabled={!editorState.canBold}
         className={editorState.isBulletList ? "!bg-red-200" : ""}
         icon={<List size={14} />}
       />
@@ -119,7 +136,6 @@ function TipTapCustomToolbar() {
         size="small"
         type="text"
         onClick={() => editorState.actions.toggleOrderedList()}
-        disabled={!editorState.canBold}
         className={editorState.isOrderedList ? "!bg-red-200" : ""}
         icon={<ListOrdered size={14} />}
       />
