@@ -53,35 +53,36 @@ function TipTapCustomToolbar() {
   const { editor } = useCurrentEditor();
   const editorState = useEditorState({
     editor,
-    selector: (ctx) => {
-      if (!ctx.editor) {
-        return;
-      }
+    selector: (state) => {
+      const editor = state.editor;
+      if (!editor) return null;
+
       return {
-        isBold: ctx.editor.isActive("bold") ?? false,
-        canBold: ctx.editor.can().chain().focus().toggleBold().run() ?? false,
-        isItalic: ctx.editor.isActive("italic") ?? false,
-        canItalic:
-          ctx.editor.can().chain().focus().toggleItalic().run() ?? false,
-        isStrike: ctx.editor.isActive("strike") ?? false,
-        canStrike:
-          ctx.editor.can().chain().focus().toggleStrike().run() ?? false,
-        isCode: ctx.editor.isActive("code") ?? false,
-        canCode: ctx.editor.can().chain().focus().toggleCode().run() ?? false,
-        canClearMarks: ctx.editor.can().chain().unsetAllMarks().run() ?? false,
-        isParagraph: ctx.editor.isActive("paragraph") ?? false,
-        isHeading1: ctx.editor.isActive("heading", { level: 1 }) ?? false,
-        isHeading2: ctx.editor.isActive("heading", { level: 2 }) ?? false,
-        isHeading3: ctx.editor.isActive("heading", { level: 3 }) ?? false,
-        isHeading4: ctx.editor.isActive("heading", { level: 4 }) ?? false,
-        isHeading5: ctx.editor.isActive("heading", { level: 5 }) ?? false,
-        isHeading6: ctx.editor.isActive("heading", { level: 6 }) ?? false,
-        isBulletList: ctx.editor.isActive("bulletList") ?? false,
-        isOrderedList: ctx.editor.isActive("orderedList") ?? false,
-        isCodeBlock: ctx.editor.isActive("codeBlock") ?? false,
-        isBlockquote: ctx.editor.isActive("blockquote") ?? false,
-        canUndo: ctx.editor.can().chain().focus().undo().run() ?? false,
-        canRedo: ctx.editor.can().chain().focus().redo().run() ?? false,
+        isBold: editor.isActive("bold") ?? false,
+        canBold: editor.can().chain().focus().toggleBold().run() ?? false,
+        isItalic: editor.isActive("italic") ?? false,
+        canItalic: editor.can().chain().focus().toggleItalic().run() ?? false,
+        isStrike: editor.isActive("strike") ?? false,
+        canStrike: editor.can().chain().focus().toggleStrike().run() ?? false,
+        isCode: editor.isActive("code") ?? false,
+        canCode: editor.can().chain().focus().toggleCode().run() ?? false,
+        canClearMarks: editor.can().chain().unsetAllMarks().run() ?? false,
+        isParagraph: editor.isActive("paragraph") ?? false,
+        isHeading1: editor.isActive("heading", { level: 1 }) ?? false,
+        isHeading2: editor.isActive("heading", { level: 2 }) ?? false,
+        isHeading3: editor.isActive("heading", { level: 3 }) ?? false,
+        isHeading4: editor.isActive("heading", { level: 4 }) ?? false,
+        isHeading5: editor.isActive("heading", { level: 5 }) ?? false,
+        isHeading6: editor.isActive("heading", { level: 6 }) ?? false,
+        isBulletList: editor.isActive("bulletList") ?? false,
+        isOrderedList: editor.isActive("orderedList") ?? false,
+        isCodeBlock: editor.isActive("codeBlock") ?? false,
+        isBlockquote: editor.isActive("blockquote") ?? false,
+        canUndo: editor.can().chain().focus().undo().run() ?? false,
+        canRedo: editor.can().chain().focus().redo().run() ?? false,
+        actions: {
+          toggleBold: () => editor.chain().focus().toggleBold().run(),
+        },
       };
     },
   });
@@ -91,15 +92,18 @@ function TipTapCustomToolbar() {
   }
 
   return (
-    <div>
+    <div className="flex gap-4 [&_button]:px-2 [&_button]:bg-gray-200 [&_button]:rounded pb-4">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editorState.canBold}
-        className={editorState.isBold ? "is-active" : ""}
+        className={editorState.isBold ? "font-bold" : ""}
       >
         Bold
       </button>
-      <button onClick={() => editor.chain().focus().toggleBulletList().run()}>
+      <button
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={editorState.isBulletList ? "font-bold" : ""}
+      >
         bullet-list
       </button>
     </div>
