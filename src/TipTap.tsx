@@ -1,4 +1,5 @@
 import TextAlign from "@tiptap/extension-text-align";
+import { Placeholder } from "@tiptap/extensions";
 import { TextStyle, FontFamily } from "@tiptap/extension-text-style";
 import Subscript from "@tiptap/extension-subscript";
 import Superscript from "@tiptap/extension-superscript";
@@ -47,13 +48,13 @@ export default function TipTapEditor() {
       TextStyle,
       Subscript,
       Superscript,
+      Placeholder.configure({ placeholder: "Write something..." }),
     ],
     editorProps: {
       attributes: {
         style: "font-family: Comic Sans MS",
       },
     },
-    content: "<p style='color: red;'>Hello World!</p>", // initial content
   });
 
   const providerValue = useMemo(() => ({ editor }), [editor]);
@@ -196,7 +197,7 @@ function TipTapCustomToolbar(props: {
       />
       <div className={dividerStyle} />
       <Select
-        className="w-48"
+        className="w-36"
         size="small"
         value={
           editorState.hasFontFamily === "default"
