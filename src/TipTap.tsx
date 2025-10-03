@@ -1,5 +1,5 @@
-import { StrikethroughOutlined } from "@ant-design/icons";
 import { ListItem } from "@tiptap/extension-list";
+import TextAlign from "@tiptap/extension-text-align";
 import {
   Editor,
   EditorContent,
@@ -11,7 +11,7 @@ import {
   type EditorStateSnapshot,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Button, Divider } from "antd";
+import { Button } from "antd";
 import {
   AlignCenter,
   AlignJustify,
@@ -32,12 +32,16 @@ export default function TipTapEditor() {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        listItem: false, // disable default ListItem
+        // listItem: false,
       }),
       CustomTab,
-      CustomListItem,
-    ], // define your extension array
-    content: "<p>Hello World!</p>", // initial content
+      // CustomListItem,
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+        defaultAlignment: "left",
+      }),
+    ],
+    content: "<p style='color: red;'>Hello World!</p>", // initial content
   });
 
   const providerValue = useMemo(() => ({ editor }), [editor]);
@@ -136,29 +140,29 @@ function TipTapCustomToolbar() {
       <Button
         size="small"
         type="text"
-        onClick={() => editorState.actions.toggleOrderedList()}
-        className={editorState.isOrderedList ? "!bg-red-200" : ""}
+        onClick={() => editorState.actions.setTextAlign("left")}
+        className={editorState.isTextAlignLeft ? "!bg-red-200" : ""}
         icon={<AlignLeft size={14} />}
       />
       <Button
         size="small"
         type="text"
-        onClick={() => editorState.actions.toggleOrderedList()}
-        className={editorState.isOrderedList ? "!bg-red-200" : ""}
+        onClick={() => editorState.actions.setTextAlign("center")}
+        className={editorState.isTextAlignCenter ? "!bg-red-200" : ""}
         icon={<AlignCenter size={14} />}
       />
       <Button
         size="small"
         type="text"
-        onClick={() => editorState.actions.toggleOrderedList()}
-        className={editorState.isOrderedList ? "!bg-red-200" : ""}
+        onClick={() => editorState.actions.setTextAlign("right")}
+        className={editorState.isTextAlignRight ? "!bg-red-200" : ""}
         icon={<AlignRight size={14} />}
       />
       <Button
         size="small"
         type="text"
-        onClick={() => editorState.actions.toggleOrderedList()}
-        className={editorState.isOrderedList ? "!bg-red-200" : ""}
+        onClick={() => editorState.actions.setTextAlign("justify")}
+        className={editorState.isTextAlignJustify ? "!bg-red-200" : ""}
         icon={<AlignJustify size={14} />}
       />
       <div className={dividerStyle} />
@@ -227,22 +231,6 @@ export const CustomTab = Extension.create({
   },
 });
 
-const CustomListItem = ListItem.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      style: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("style"),
-        renderHTML: (attributes) => {
-          if (!attributes.style) return {};
-          return { style: attributes.style };
-        },
-      },
-    };
-  },
-});
-
 export const CustomSelection = Extension.create({
   name: "customSelection",
 });
@@ -293,6 +281,15 @@ function getToolbarSelectionConfig(
     isBlockquote: editor.isActive("blockquote"),
     canUndo: editor.can().chain().focus().undo().run(),
     canRedo: editor.can().chain().focus().redo().run(),
+    canTextAlign: editor.can().chain().focus().setTextAlign("").run(),
+    isTextAlignLeft:
+      editor.isActive({ textAlign: "left" }) ||
+      (!editor.isActive({ textAlign: "right" }) &&
+        !editor.isActive({ textAlign: "center" }) &&
+        !editor.isActive({ textAlign: "justify" })),
+    isTextAlignRight: editor.isActive({ textAlign: "right" }),
+    isTextAlignCenter: editor.isActive({ textAlign: "center" }),
+    isTextAlignJustify: editor.isActive({ textAlign: "justify" }),
     actions: {
       toggleBold: () => editor.chain().focus().toggleBold().run(),
       toggleBulletList: () => editor.chain().focus().toggleBulletList().run(),
@@ -300,6 +297,41 @@ function getToolbarSelectionConfig(
       toggleItalic: () => editor.chain().focus().toggleItalic().run(),
       toggleUnderline: () => editor.chain().focus().toggleUnderline().run(),
       toggleStrike: () => editor.chain().focus().toggleStrike().run(),
+      setTextAlign: (direction: string) =>
+        editor.chain().focus().setTextAlign(direction).run(),
     },
   };
 }
+
+// Testing Playground
+
+// const CustomListItem = ListItem.extend({
+//   addAttributes() {
+//     return {
+//       ...this.parent?.(),
+//       style: {
+//         default: null,
+//         parseHTML: (element) => element.getAttribute("style"),
+//         renderHTML: (attributes) => {
+//           if (!attributes.style) return {};
+//           return { style: attributes.style };
+//         },
+//       },
+//     };
+//   },
+// });
+
+// function withStyleAttr(NodeExtension: Node) {
+//   return NodeExtension.extend({
+//     addAttributes() {
+//       return {
+//         ...this.parent?.(),
+//         style: {
+//           default: null,
+//           parseHTML: (el) => el.getAttribute("style"),
+//           renderHTML: (attrs) => (attrs.style ? { style: attrs.style } : {}),
+//         },
+//       };
+//     },
+//   });
+// }
