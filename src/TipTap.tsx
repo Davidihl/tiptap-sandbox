@@ -1,5 +1,7 @@
 import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle, FontFamily } from "@tiptap/extension-text-style";
+import Subscript from "@tiptap/extension-subscript";
+import Superscript from "@tiptap/extension-superscript";
 
 import {
   Editor,
@@ -23,8 +25,8 @@ import {
   List,
   ListOrdered,
   Strikethrough,
-  Subscript,
-  Superscript,
+  Subscript as SubscriptIcon,
+  Superscript as SuperscriptIcon,
   Underline,
 } from "lucide-react";
 import { useEffect, useMemo } from "react";
@@ -43,6 +45,8 @@ export default function TipTapEditor() {
       }),
       FontFamily,
       TextStyle,
+      Subscript,
+      Superscript,
     ],
     editorProps: {
       attributes: {
@@ -107,7 +111,6 @@ function TipTapCustomToolbar(props: {
         size="small"
         type="text"
         onClick={() => editorState.actions.toggleBold()}
-        disabled={!editorState.canBold}
         className={editorState.isBold ? "!bg-red-200" : ""}
         icon={<Bold size={14} />}
       />
@@ -115,7 +118,6 @@ function TipTapCustomToolbar(props: {
         size="small"
         type="text"
         onClick={() => editorState.actions.toggleItalic()}
-        disabled={!editorState.canItalic}
         className={editorState.isItalic ? "!bg-red-200" : ""}
         icon={<Italic size={14} />}
       />
@@ -124,7 +126,6 @@ function TipTapCustomToolbar(props: {
         size="small"
         type="text"
         onClick={() => editorState.actions.toggleUnderline()}
-        disabled={!editorState.canUnderline}
         className={editorState.isUnderline ? "!bg-red-200" : ""}
         icon={<Underline size={14} />}
       />
@@ -132,25 +133,22 @@ function TipTapCustomToolbar(props: {
         size="small"
         type="text"
         onClick={() => editorState.actions.toggleStrike()}
-        disabled={!editorState.canStrike}
         className={editorState.isStrike ? "!bg-red-200" : ""}
         icon={<Strikethrough size={14} />}
       />
       <Button
         size="small"
         type="text"
-        onClick={() => editorState.actions.toggleStrike()}
-        disabled={!editorState.canStrike}
-        className={editorState.isStrike ? "!bg-red-200" : ""}
-        icon={<Subscript size={14} />}
+        onClick={() => editorState.actions.toggleSubscript()}
+        className={editorState.isSubscript ? "!bg-red-200" : ""}
+        icon={<SubscriptIcon size={14} />}
       />
       <Button
         size="small"
         type="text"
-        onClick={() => editorState.actions.toggleStrike()}
-        disabled={!editorState.canStrike}
-        className={editorState.isStrike ? "!bg-red-200" : ""}
-        icon={<Superscript size={14} />}
+        onClick={() => editorState.actions.toggleSuperscript()}
+        className={editorState.isSuperscript ? "!bg-red-200" : ""}
+        icon={<SuperscriptIcon size={14} />}
       />
       <div className={dividerStyle} />
       <Button
@@ -198,7 +196,7 @@ function TipTapCustomToolbar(props: {
       />
       <div className={dividerStyle} />
       <Select
-        className="w-32"
+        className="w-48"
         size="small"
         value={
           editorState.hasFontFamily === "default"
@@ -209,7 +207,11 @@ function TipTapCustomToolbar(props: {
           editorState.actions.setFontFamily(value);
         }}
         options={props.fontFamilies}
+        optionRender={(option) => (
+          <div style={{ fontFamily: `${option.value}` }}>{option.label}</div>
+        )}
       />
+      <div className={dividerStyle} />
     </div>
   );
 }
@@ -286,16 +288,10 @@ function getToolbarSelectionConfig(
 
   return {
     isBold: editor.isActive("bold"),
-    canBold: editor.can().chain().focus().toggleBold().run(),
     isUnderline: editor.isActive("underline"),
-    canUnderline: editor.can().chain().focus().toggleUnderline().run(),
     isItalic: editor.isActive("italic"),
-    canItalic: editor.can().chain().focus().toggleItalic().run(),
     isStrike: editor.isActive("strike"),
-    canStrike: editor.can().chain().focus().toggleStrike().run(),
     isCode: editor.isActive("code"),
-    canCode: editor.can().chain().focus().toggleCode().run(),
-    canClearMarks: editor.can().chain().unsetAllMarks().run(),
     isParagraph: editor.isActive("paragraph"),
     isHeading1: editor.isActive("heading", { level: 1 }),
     isHeading2: editor.isActive("heading", { level: 2 }),
@@ -319,6 +315,8 @@ function getToolbarSelectionConfig(
     isTextAlignCenter: editor.isActive({ textAlign: "center" }),
     isTextAlignJustify: editor.isActive({ textAlign: "justify" }),
     hasFontFamily: editor.getAttributes("textStyle").fontFamily ?? "default",
+    isSubscript: editor.isActive("subscript"),
+    isSuperscript: editor.isActive("superscript"),
     actions: {
       toggleBold: () => editor.chain().focus().toggleBold().run(),
       toggleBulletList: () => editor.chain().focus().toggleBulletList().run(),
@@ -326,6 +324,8 @@ function getToolbarSelectionConfig(
       toggleItalic: () => editor.chain().focus().toggleItalic().run(),
       toggleUnderline: () => editor.chain().focus().toggleUnderline().run(),
       toggleStrike: () => editor.chain().focus().toggleStrike().run(),
+      toggleSubscript: () => editor.chain().focus().toggleSubscript().run(),
+      toggleSuperscript: () => editor.chain().focus().toggleSuperscript().run(),
       setTextAlign: (direction: string) =>
         editor.chain().focus().setTextAlign(direction).run(),
       setFontFamily: (fontFamily: string) =>
