@@ -1,5 +1,6 @@
-import { ListItem } from "@tiptap/extension-list";
 import TextAlign from "@tiptap/extension-text-align";
+import { TextStyle, FontFamily } from "@tiptap/extension-text-style";
+
 import {
   Editor,
   EditorContent,
@@ -11,7 +12,7 @@ import {
   type EditorStateSnapshot,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Button } from "antd";
+import { Button, Select } from "antd";
 import {
   AlignCenter,
   AlignJustify,
@@ -40,11 +41,24 @@ export default function TipTapEditor() {
         types: ["heading", "paragraph"],
         defaultAlignment: "left",
       }),
+      FontFamily,
+      TextStyle,
     ],
+    editorProps: {
+      attributes: {
+        style: "font-family: Comic Sans MS",
+      },
+    },
     content: "<p style='color: red;'>Hello World!</p>", // initial content
   });
 
   const providerValue = useMemo(() => ({ editor }), [editor]);
+
+  const fontFamilies = [
+    { label: "Inter", value: "Inter" },
+    { label: "Comic Sans MS", value: "Comic Sans MS" },
+    { label: "Monospace", value: "Monospace" },
+  ];
 
   useEffect(() => {
     if (!editor) return;
@@ -65,13 +79,15 @@ export default function TipTapEditor() {
 
   return (
     <EditorContext.Provider value={providerValue}>
-      <TipTapCustomToolbar />
+      <TipTapCustomToolbar fontFamilies={fontFamilies} />
       <EditorContent editor={editor} />
     </EditorContext.Provider>
   );
 }
 
-function TipTapCustomToolbar() {
+function TipTapCustomToolbar(props: {
+  fontFamilies: { value: string; label: string }[];
+}) {
   const { editor } = useCurrentEditor();
 
   const editorState = useEditorState({
@@ -180,8 +196,20 @@ function TipTapCustomToolbar() {
         className={editorState.isOrderedList ? "!bg-red-200" : ""}
         icon={<ListOrdered size={14} />}
       />
-
       <div className={dividerStyle} />
+      <Select
+        className="w-32"
+        size="small"
+        value={
+          editorState.hasFontFamily === "default"
+            ? "Comic Sans MS"
+            : editorState.hasFontFamily
+        }
+        onSelect={(value) => {
+          editorState.actions.setFontFamily(value);
+        }}
+        options={props.fontFamilies}
+      />
     </div>
   );
 }
@@ -290,6 +318,7 @@ function getToolbarSelectionConfig(
     isTextAlignRight: editor.isActive({ textAlign: "right" }),
     isTextAlignCenter: editor.isActive({ textAlign: "center" }),
     isTextAlignJustify: editor.isActive({ textAlign: "justify" }),
+    hasFontFamily: editor.getAttributes("textStyle").fontFamily ?? "default",
     actions: {
       toggleBold: () => editor.chain().focus().toggleBold().run(),
       toggleBulletList: () => editor.chain().focus().toggleBulletList().run(),
@@ -299,6 +328,8 @@ function getToolbarSelectionConfig(
       toggleStrike: () => editor.chain().focus().toggleStrike().run(),
       setTextAlign: (direction: string) =>
         editor.chain().focus().setTextAlign(direction).run(),
+      setFontFamily: (fontFamily: string) =>
+        editor.chain().focus().setFontFamily(fontFamily).run(),
     },
   };
 }
